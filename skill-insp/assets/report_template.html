@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skill Inspection Report</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --color-bg: #fafbfc;
+      --color-surface: #ffffff;
+      --color-border: #e8ecf0;
+      --color-text: #24292f;
+      --color-text-secondary: #57606a;
+      --color-accent: #0969da;
+      --color-success: #1a7f37;
+      --color-warning: #9a6700;
+      --color-danger: #cf222e;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6;
+      color: var(--color-text);
+      background: var(--color-bg);
+      padding: 2rem 1rem;
+      font-size: 15px;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .report-header {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .report-header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .report-meta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      color: var(--color-text-secondary);
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+    }
+
+    /* Score Overview */
+    .score-overview {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 2rem;
+      align-items: center;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .score-ring {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: conic-gradient(var(--ring-color) calc(var(--score) * 3.6deg), var(--color-border) 0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .score-ring::before {
+      content: '';
+      position: absolute;
+      inset: 10px;
+      background: var(--color-surface);
+      border-radius: 50%;
+    }
+
+    .score-number {
+      position: relative;
+      font-size: 2.5rem;
+      font-weight: 700;
+    }
+
+    .score-details {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .score-details h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    .badge-ready { background: #dafbe1; color: var(--color-success); }
+    .badge-usable { background: #fff8c5; color: var(--color-warning); }
+    .badge-needs-work { background: #ffebe9; color: var(--color-danger); }
+    .badge-low { background: #dafbe1; color: var(--color-success); }
+    .badge-medium { background: #fff8c5; color: var(--color-warning); }
+    .badge-high { background: #ffebe9; color: var(--color-danger); }
+
+    /* Sections */
+    .section {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 1.5rem 2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    /* Strengths */
+    .strength-item {
+      padding: 0.75rem 1rem;
+      background: #f6fef9;
+      border-left: 3px solid var(--color-success);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .strength-item:last-child { margin-bottom: 0; }
+
+    /* Scorecard */
+    .scorecard-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .scorecard-table th {
+      text-align: left;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-secondary);
+      padding: 0.5rem 0.75rem;
+      border-bottom: 2px solid var(--color-border);
+    }
+
+    .scorecard-table td {
+      padding: 0.875rem 0.75rem;
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: top;
+    }
+
+    .scorecard-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .dim-name {
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .dim-score-cell {
+      width: 80px;
+      text-align: center;
+    }
+
+    .dim-score-value {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .dim-bar-cell {
+      width: 120px;
+    }
+
+    .dim-bar {
+      height: 6px;
+      background: var(--color-border);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .dim-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+
+    .bar-high { background: var(--color-success); }
+    .bar-mid { background: #bf8700; }
+    .bar-low { background: var(--color-danger); }
+
+    .dim-rationale {
+      font-size: 0.825rem;
+      color: var(--color-text-secondary);
+      margin-top: 0.375rem;
+      line-height: 1.5;
+    }
+
+    /* Findings */
+    .finding-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .finding-card:last-child { margin-bottom: 0; }
+
+    .finding-card.priority-high { border-left: 4px solid var(--color-danger); }
+    .finding-card.priority-medium { border-left: 4px solid var(--color-warning); }
+    .finding-card.priority-low { border-left: 4px solid var(--color-accent); }
+
+    .finding-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .finding-title {
+      font-weight: 600;
+      font-size: 0.925rem;
+    }
+
+    .finding-detail {
+      font-size: 0.85rem;
+      color: var(--color-text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .finding-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.8rem;
+      color: var(--color-text-secondary);
+    }
+
+    .finding-file {
+      font-family: "SF Mono", Monaco, "Cascadia Code", monospace;
+      font-size: 0.8rem;
+      background: #f6f8fa;
+      padding: 0.125rem 0.5rem;
+      border-radius: 3px;
+    }
+
+    .finding-rec {
+      font-size: 0.85rem;
+      color: var(--color-text);
+      background: #f6f8fa;
+      padding: 0.5rem 0.75rem;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+    }
+
+    /* Recommendations */
+    .rec-card {
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius);
+      margin-bottom: 0.75rem;
+      border: 1px solid;
+    }
+
+    .rec-card:last-child { margin-bottom: 0; }
+
+    .rec-card.high { background: #fff5f5; border-color: #fecaca; }
+    .rec-card.medium { background: #fffbeb; border-color: #fde68a; }
+    .rec-card.low { background: #eff6ff; border-color: #bfdbfe; }
+
+    .rec-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.375rem;
+    }
+
+    .rec-dim {
+      font-size: 0.75rem;
+      color: var(--color-text-secondary);
+      background: rgba(255,255,255,0.7);
+      padding: 0.125rem 0.5rem;
+      border-radius: 3px;
+    }
+
+    .rec-text {
+      font-size: 0.9rem;
+    }
+
+    /* Footer */
+    .report-footer {
+      text-align: center;
+      color: var(--color-text-secondary);
+      font-size: 0.8rem;
+      padding: 1rem;
+    }
+
+    .empty-state {
+      padding: 1.5rem;
+      text-align: center;
+      color: var(--color-text-secondary);
+      font-style: italic;
+    }
+
+    /* Eval Results */
+    .eval-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .eval-table th {
+      text-align: left;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-secondary);
+      padding: 0.5rem 0.75rem;
+      border-bottom: 2px solid var(--color-border);
+    }
+
+    .eval-table td {
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: top;
+      font-size: 0.875rem;
+    }
+
+    .eval-table tr:last-child td { border-bottom: none; }
+
+    .eval-pass { color: var(--color-success); font-weight: 600; }
+    .eval-fail { color: var(--color-danger); font-weight: 600; }
+
+    .eval-summary {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .eval-summary-item {
+      padding: 0.375rem 0.75rem;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .eval-summary-pass { background: #dafbe1; color: var(--color-success); }
+    .eval-summary-fail { background: #ffebe9; color: var(--color-danger); }
+    .eval-summary-skip { background: #f6f8fa; color: var(--color-text-secondary); }
+
+    @media (max-width: 640px) {
+      body { padding: 1rem 0.5rem; }
+      .score-overview { grid-template-columns: 1fr; text-align: center; }
+      .score-ring { margin: 0 auto; }
+      .badge-row { justify-content: center; }
+      .section { padding: 1.25rem 1rem; }
+      .scorecard-table .dim-bar-cell { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="report-header" id="header"></div>
+    <div class="score-overview" id="score-overview"></div>
+    <div class="section" id="strengths"></div>
+    <div class="section" id="dimensions"></div>
+    <div class="section" id="findings"></div>
+    <div class="section" id="recommendations"></div>
+    <div class="section" id="eval-results" style="display:none"></div>
+    <div class="report-footer">Generated by skill-insp &middot; <span id="timestamp"></span></div>
+  </div>
+
+  <script>
+    const data = __REPORT_DATA__;
+
+    function esc(str) {
+      const div = document.createElement('div');
+      div.textContent = str || '';
+      return div.innerHTML;
+    }
+
+    function formatDate(iso) {
+      try { return new Date(iso).toLocaleString(); } catch { return iso; }
+    }
+
+    function scoreColor(score, max) {
+      const pct = score / max;
+      if (pct >= 0.8) return 'var(--color-success)';
+      if (pct >= 0.6) return 'var(--color-warning)';
+      return 'var(--color-danger)';
+    }
+
+    function barClass(score, max) {
+      const pct = score / max;
+      if (pct >= 0.8) return 'bar-high';
+      if (pct >= 0.6) return 'bar-mid';
+      return 'bar-low';
+    }
+
+    function readinessBadge(r) {
+      const cls = r === 'ready' ? 'badge-ready' : r === 'needs-work' ? 'badge-needs-work' : 'badge-usable';
+      return `<span class="badge ${cls}">${esc((r || '').replace(/-/g, ' '))}</span>`;
+    }
+
+    function riskBadge(r) {
+      const cls = `badge-${r || 'low'}`;
+      return `<span class="badge ${cls}">${esc(r || 'low')} risk</span>`;
+    }
+
+    // Header
+    const total = Math.round(data.scores?.total || 0);
+    document.getElementById('header').innerHTML = `
+      <h1>${esc(data.skill_name || 'Unknown Skill')}</h1>
+      <div class="report-meta">
+        ${data.skill_version ? `<span>v${esc(data.skill_version)}</span>` : ''}
+        <span>${formatDate(data.analyzed_at)}</span>
+        <span>Score: ${total}/100</span>
+      </div>
+    `;
+
+    // Score overview
+    const ringColor = scoreColor(total, 100);
+    document.getElementById('score-overview').innerHTML = `
+      <div class="score-ring" style="--score: ${total}; --ring-color: ${ringColor}">
+        <span class="score-number" style="color: ${ringColor}">${total}</span>
+      </div>
+      <div class="score-details">
+        <h2>Overall Assessment</h2>
+        <div class="badge-row">
+          ${readinessBadge(data.readiness)}
+          ${riskBadge(data.risk_level)}
+        </div>
+      </div>
+    `;
+
+    // Strengths
+    const strengths = data.strengths || [];
+    document.getElementById('strengths').innerHTML = `
+      <h2>Key Strengths</h2>
+      ${strengths.length
+        ? strengths.map(s => `<div class="strength-item">${esc(s)}</div>`).join('')
+        : '<div class="empty-state">No strengths recorded</div>'}
+    `;
+
+    // Scorecard
+    const dims = [
+      ['structure', 'Structure', 10],
+      ['triggering', 'Triggering', 15],
+      ['usability', 'Usability', 15],
+      ['completeness', 'Completeness', 15],
+      ['progressive_disclosure', 'Progressive Disclosure', 10],
+      ['testability', 'Testability', 10],
+      ['maintainability', 'Maintainability', 10],
+      ['safety_trust', 'Safety & Trust', 15],
+    ];
+
+    const rows = dims.map(([key, label, max]) => {
+      const score = data.scores?.[key] || 0;
+      const pct = Math.round((score / max) * 100);
+      const rationale = (data.dimension_rationale && data.dimension_rationale[key]) || '';
+      return `
+        <tr>
+          <td>
+            <div class="dim-name">${esc(label)}</div>
+            ${rationale ? `<div class="dim-rationale">${esc(rationale)}</div>` : ''}
+          </td>
+          <td class="dim-bar-cell">
+            <div class="dim-bar"><div class="dim-bar-fill ${barClass(score, max)}" style="width:${pct}%"></div></div>
+          </td>
+          <td class="dim-score-cell">
+            <span class="dim-score-value" style="color:${scoreColor(score, max)}">${score}</span><span style="color:var(--color-text-secondary)">/${max}</span>
+          </td>
+        </tr>`;
+    }).join('');
+
+    document.getElementById('dimensions').innerHTML = `
+      <h2>Scorecard</h2>
+      <table class="scorecard-table">
+        <thead><tr><th>Dimension</th><th></th><th>Score</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+
+    // Findings
+    const findings = data.findings || [];
+    const findingCards = findings.map(f => `
+      <div class="finding-card priority-${f.priority}">
+        <div class="finding-header">
+          <span class="badge badge-${f.priority}">${esc(f.priority)}</span>
+          <span class="finding-title">${esc(f.title)}</span>
+        </div>
+        <div class="finding-detail">${esc(f.detail)}</div>
+        <div class="finding-meta">
+          ${f.file ? `<span class="finding-file">${esc(f.file)}${f.line ? ':' + f.line : ''}</span>` : ''}
+        </div>
+        ${f.recommendation ? `<div class="finding-rec">${esc(f.recommendation)}</div>` : ''}
+      </div>
+    `).join('');
+
+    document.getElementById('findings').innerHTML = `
+      <h2>Findings</h2>
+      ${findings.length ? findingCards : '<div class="empty-state">No findings</div>'}
+    `;
+
+    // Recommendations
+    const recs = data.recommendations || [];
+    const recCards = recs.map(r => `
+      <div class="rec-card ${r.priority}">
+        <div class="rec-header">
+          <span class="badge badge-${r.priority}">${esc(r.priority)}</span>
+          <span class="rec-dim">${esc(r.dimension)}</span>
+        </div>
+        <div class="rec-text">${esc(r.text)}</div>
+      </div>
+    `).join('');
+
+    document.getElementById('recommendations').innerHTML = `
+      <h2>Recommendations</h2>
+      ${recs.length ? recCards : '<div class="empty-state">No recommendations</div>'}
+    `;
+
+    document.getElementById('timestamp').textContent = formatDate(data.analyzed_at);
+
+    // Eval Results
+    const evalResults = data.eval_results || [];
+    if (evalResults.length > 0) {
+      const evalEl = document.getElementById('eval-results');
+      evalEl.style.display = '';
+      const passed = evalResults.filter(e => e.pass).length;
+      const failed = evalResults.filter(e => e.pass === false).length;
+      const skipped = evalResults.length - passed - failed;
+
+      const rows = evalResults.map(ev => {
+        const expRows = (ev.expectations || []).map(exp =>
+          `<div style="margin:0.25rem 0;font-size:0.8rem;">
+            <span class="${exp.pass ? 'eval-pass' : 'eval-fail'}">${exp.pass ? '✓' : '✗'}</span>
+            ${esc(exp.text)}${exp.reason ? ` — <span style="color:var(--color-text-secondary)">${esc(exp.reason)}</span>` : ''}
+          </div>`
+        ).join('');
+        return `<tr>
+          <td>${ev.id}</td>
+          <td>${esc(ev.prompt)}</td>
+          <td class="${ev.pass ? 'eval-pass' : 'eval-fail'}">${ev.pass ? 'PASS' : 'FAIL'}</td>
+          <td>${expRows}</td>
+        </tr>`;
+      }).join('');
+
+      evalEl.innerHTML = `
+        <h2>Eval Results</h2>
+        <div class="eval-summary">
+          <span class="eval-summary-item eval-summary-pass">${passed} passed</span>
+          ${failed ? `<span class="eval-summary-item eval-summary-fail">${failed} failed</span>` : ''}
+          ${skipped ? `<span class="eval-summary-item eval-summary-skip">${skipped} skipped</span>` : ''}
+        </div>
+        <table class="eval-table">
+          <thead><tr><th>ID</th><th>Scenario</th><th>Result</th><th>Expectations</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+  </script>
+</body>
+</html>

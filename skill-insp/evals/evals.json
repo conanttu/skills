@@ -1,0 +1,143 @@
+{
+  "skill_name": "skill-insp",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Inspect the skill at ./sample-skill and give me a report.",
+      "expected_output": "A default report with overall assessment, scorecard, safety summary, recommendations, and HTML report path.",
+      "files": [
+        {
+          "path": "sample-skill/SKILL.md",
+          "content": "---\nname: sample-skill\ndescription: A sample skill for testing. Use when users say 'run sample'.\nmetadata:\n  version: \"1.0.0\"\nallowed-tools:\n  - Read\n  - Write\n---\n\n# Sample Skill\n\nA minimal skill that reads a file and summarizes it.\n\n## Workflow\n\n1. Read the file the user specifies.\n2. Summarize its contents in 3 bullet points.\n3. Write the summary to `output.md`.\n"
+        },
+        {
+          "path": "sample-skill/README.md",
+          "content": "# Sample Skill\n\nReads a file and produces a summary.\n"
+        }
+      ],
+      "expectations": [
+        "The skill's file tree is listed using find.",
+        "SKILL.md is read in full and its frontmatter is parsed.",
+        "All eight dimensions are scored and presented in order.",
+        "Safety analysis reads actual code and distinguishes documentation from executable behavior.",
+        "Recommendations are grouped by High, Medium, Low priority.",
+        "analysis.json is written to the cache directory.",
+        "render-html.js is run to generate latest.html.",
+        "The report ends with the HTML path and next actions prompt."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Show me the detailed version of the last inspection.",
+      "expected_output": "An expanded report reusing cached analysis, with per-dimension scoring rationale and evidence.",
+      "files": [],
+      "precondition": "Run eval 1 first to populate the cache.",
+      "expectations": [
+        "analysis.json is reused when the skill has not changed.",
+        "Each dimension includes scoring rationale.",
+        "All findings are shown including low-priority ones.",
+        "Sensitive values (secrets, tokens) are redacted in output."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Apply the recommended improvements to ./sample-skill.",
+      "expected_output": "High-priority recommendations are applied with backups created.",
+      "files": [
+        {
+          "path": "sample-skill/SKILL.md",
+          "content": "---\nname: sample-skill\ndescription: Does stuff.\nmetadata:\n  version: \"0.1.0\"\n---\n\n# Sample Skill\n\nDoes stuff.\n"
+        }
+      ],
+      "expectations": [
+        "Only modifies the target skill after explicit user request.",
+        "High-priority recommendations are applied by default.",
+        "Target files are re-read before editing.",
+        "Backup copies are saved to last-apply/ before modification.",
+        "manifest.json is created with relative paths and before/after SHA-256 hashes.",
+        "Changes are minimal and reversible.",
+        "Analysis is rerun after editing to verify improvements."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Revert the last apply.",
+      "expected_output": "Files are restored from backup after hash verification.",
+      "files": [],
+      "precondition": "Run eval 3 first to have a last-apply to revert.",
+      "expectations": [
+        "manifest.json is read from last-apply/.",
+        "Current file hashes are verified against recorded after-hashes before restoring.",
+        "If hashes match, files are restored from backup.",
+        "If hashes do not match, conflicts are reported instead of overwriting.",
+        "git reset --hard and git checkout -- are never used."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Inspect this skill. Its SKILL.md mentions 'rm -rf' in a safety checklist, and its scripts/cleanup.sh actually runs 'rm -rf $TEMP_DIR'.",
+      "expected_output": "The SKILL.md mention is recognized as documentation; the script usage is flagged as a finding.",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "content": "---\nname: cleanup-helper\ndescription: Use when users ask to clean up temp files.\n---\n\n# Cleanup Helper\n\n## Safety Checklist\n- Check for `rm -rf` usage\n- Verify paths are scoped\n"
+        },
+        {
+          "path": "scripts/cleanup.sh",
+          "content": "#!/bin/bash\nTEMP_DIR=\"${1:-/tmp/workspace}\"\nrm -rf \"$TEMP_DIR\"\necho \"Cleaned $TEMP_DIR\"\n"
+        }
+      ],
+      "expectations": [
+        "The rm -rf in SKILL.md is identified as documentation/checklist context, not a real destructive operation.",
+        "The rm -rf in scripts/cleanup.sh IS flagged as a safety finding.",
+        "The safety analysis explains the distinction between documentation and execution.",
+        "The finding includes the file path and line reference of the script usage."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Inspect the skill at /nonexistent/path.",
+      "expected_output": "The error is reported to the user and analysis does not proceed.",
+      "files": [],
+      "expectations": [
+        "The model reports that the path does not exist or has no SKILL.md.",
+        "No analysis.json is written.",
+        "No HTML report is generated.",
+        "The model does not fabricate scores or findings."
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Inspect the skill at ./my-tool. The directory exists but contains only a scripts/ folder and no SKILL.md.",
+      "expected_output": "The model reports that SKILL.md is missing and does not proceed with scoring.",
+      "files": [
+        {
+          "path": "my-tool/scripts/run.sh",
+          "content": "#!/bin/bash\necho hello\n"
+        }
+      ],
+      "expectations": [
+        "The model checks for SKILL.md and reports it is missing.",
+        "No scores are generated or fabricated.",
+        "The model may suggest creating a SKILL.md but does not score without one."
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Inspect the skill at ./incomplete-skill. It has a SKILL.md with no frontmatter.",
+      "expected_output": "The model proceeds with analysis but flags missing frontmatter as a high-priority Structure finding.",
+      "files": [
+        {
+          "path": "incomplete-skill/SKILL.md",
+          "content": "# My Skill\n\nDo something useful.\n"
+        }
+      ],
+      "expectations": [
+        "The model detects that YAML frontmatter is missing.",
+        "A high-priority finding is raised for the Structure dimension.",
+        "The model still attempts to analyze the rest of the skill content.",
+        "Scores reflect the missing metadata (lower Structure score)."
+      ]
+    }
+  ]
+}
