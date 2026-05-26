@@ -1,0 +1,99 @@
+{
+  "skill_name": "plancollab",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/plancollab 给 CLI 添加 --verbose 参数",
+      "expected_output": "Baseline check, Claude generates a plan, invokes Codex CLI for review with consensus update, saves plan.md on approval",
+      "expectations": [
+        "Checks for .plancollab/baseline.md and asks user whether to use existing or rescan (or scan if none)",
+        "Skill displays a session header showing task, planner, and reviewer roles",
+        "Claude generates a plan containing all 6 sections: Summary, Affected Files, Steps, Design Decisions, Risks, Testing",
+        "Other agent is invoked via CLI (codex exec or claude -p)",
+        "Communication payload includes contents of .plancollab/baseline.md",
+        "Full plan saved to {SESSION}/plans/round-1-cc.md (or -cx if Codex planned)",
+        "Full review saved to {SESSION}/reviews/round-1-cx.md (or -cc if Claude reviewed)",
+        "Consensus update saved to {SESSION}/reviews/round-1-consensus-cx.md (or -cc) listing agreed and disputed sections",
+        "state.json is created with agreed/disputed arrays",
+        "Review verdict (APPROVED or NEEDS_REVISION) is displayed to user",
+        "If APPROVED, final plan is saved to .plancollab/{session-name}/plan.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/plancollab 让 codex 做计划，实现用户认证模块",
+      "expected_output": "Codex is used as planner (generates baseline + plan via CLI), Claude acts as reviewer directly in conversation",
+      "expectations": [
+        "Planner is set to codex based on user intent",
+        "Reviewer is set to claude",
+        "If no baseline exists, Codex scans the project via CLI and generates .plancollab/baseline.md",
+        "Other agent is invoked to generate the plan, output written to {SESSION}/temp/plan.md",
+        "Claude reviews the plan directly in conversation without invoking Codex CLI",
+        "Claude produces a consensus update: which sections are agreed, which are disputed",
+        "Review includes verdict, strengths, issues table with severity levels, and suggestions"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "/plancollab refactor the session management module to support multiple providers",
+      "expected_output": "Multi-round discussion using consensus-based projection: agreed sections locked as one-liners, disputed sections sent in full",
+      "expectations": [
+        "Round 1: full plan sent to reviewer, consensus update identifies agreed/disputed sections",
+        "Round 2 communication payload: agreed sections as one-line references, disputed sections as full text",
+        "Codex reviewer sees discussion log so it can track whether prior issues were addressed",
+        "Round 2 plan preserves agreed sections unchanged",
+        "Each round produces: plans/round-N-{cc|cx}.md, reviews/round-N-{cc|cx}.md, reviews/round-N-consensus-{cc|cx}.md",
+        "state.json updated after every round with agreed/disputed lists and rounds array",
+        "Communication payload shrinks as more sections reach agreement"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "/plancollab status",
+      "expected_output": "Scans .plancollab/ for session directories and displays collaboration status including agreed/disputed sections",
+      "expectations": [
+        "Scans .plancollab/ for directories containing state.json",
+        "If no sessions found, displays 'no active collaboration' message",
+        "If found, displays session list table (task, status, rounds, roles, updated) or single session details"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "/plancollab implement a complex caching layer with Redis and in-memory fallback",
+      "expected_output": "When max rounds reached without agreement, conflict points are summarized with both positions and file references, plus already-agreed sections listed",
+      "expectations": [
+        "After max rounds with no APPROVED verdict, unresolved disagreements are summarized",
+        "Each conflict point shows both planner's and reviewer's positions",
+        "Conflict summary references specific round files (e.g., {SESSION}/reviews/round-2-cx.md)",
+        "Already agreed sections are listed separately",
+        "User is asked to decide on each conflict point rather than generic accept/continue/abandon"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "/plancollab add WebSocket support for real-time updates",
+      "expected_output": "First-time use triggers project baseline scan, baseline is saved and reused",
+      "expectations": [
+        "No .plancollab/baseline.md exists initially",
+        "Skill asks user for permission to scan the project",
+        "Planner scans the project and generates baseline.md with: Project Overview, Tech Stack, Directory Structure, Core Modules, Architecture Patterns, Key Types, Build & Run",
+        "baseline.md is saved to .plancollab/baseline.md with a date header",
+        "Baseline content is used as project context in the Round 1 communication payload"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Help me redesign the adapter layer to support a plugin architecture",
+      "expected_output": "Claude generates a non-trivial plan, auto-review triggers, asks user about auto-review preference on first use, then proceeds with Codex review",
+      "expectations": [
+        "Claude generates a plan with multiple files and architectural decisions (non-trivial)",
+        "Skill auto-invokes after plan generation (not triggered by /plancollab)",
+        "No .plancollab/config.json exists, so user is asked about auto-review preference",
+        "If user says 'yes always', config.json is written with auto_review: true",
+        "If user says 'no', config.json is written with auto_review: false and review is skipped",
+        "If user says 'just this once', review proceeds without writing config.json",
+        "On subsequent plans, config.json is read and auto-review behavior follows the saved preference"
+      ]
+    }
+  ]
+}

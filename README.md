@@ -8,9 +8,10 @@ A skill is a self-contained folder with a `SKILL.md` that defines a workflow for
 
 ## Available Skills
 
-| Skill | Description | Version |
-|---|---|---|
-| [skill-insp](./skill-insp/) | Evaluate, inspect, and improve skill folders — producing a scored report with safety analysis and actionable recommendations | 1.0.0 |
+| Skill | Description | Version | Prerequisites |
+|---|---|---|---|
+| [plancollab](./plancollab/) | Cross-agent planning and review between Claude Code and Codex — one agent creates implementation plans, the other reviews them, iterating until consensus is reached | 1.0.0 | `codex` CLI, `claude` CLI |
+| [skill-insp](./skill-insp/) | Evaluate, inspect, and improve skill folders — producing a scored report with safety analysis and actionable recommendations | 1.0.0 | - |
 
 > Version in this table should match the `metadata.version` field in each skill's `SKILL.md`. Update both when releasing.
 
@@ -21,7 +22,12 @@ A skill is a self-contained folder with a `SKILL.md` that defines a workflow for
 Install skills from this repository:
 
 ```bash
+# Install a specific skill globally
+npx skills add conanttu/skills/<skill-name> -g -y
+
+# Examples:
 npx skills add conanttu/skills/skill-insp -g -y
+npx skills add conanttu/skills/plancollab -g -y
 ```
 
 Or search and browse available skills:
@@ -37,7 +43,11 @@ Browse all skills at: https://skills.sh/
 Copy a skill folder into your agent's skills directory:
 
 ```bash
-cp -r skill-insp /path/to/your/agent/skills/
+# Generic
+cp -r <skill-name> /path/to/your/agent/skills/
+
+# Example
+cp -r skill-insp ~/.claude/skills/
 ```
 
 Or clone the entire repo and symlink what you need:
@@ -45,7 +55,12 @@ Or clone the entire repo and symlink what you need:
 ```bash
 git clone https://github.com/conanttu/skills.git
 cd skills
-ln -s $(pwd)/skill-insp /path/to/your/agent/skills/skill-insp
+
+# Symlink to Claude Code
+ln -s $(pwd)/<skill-name> ~/.claude/skills/<skill-name>
+
+# For plancollab: also symlink to Codex for bidirectional support
+ln -s $(pwd)/plancollab ~/.agents/skills/plancollab
 ```
 
 ## Skill Structure
@@ -57,9 +72,13 @@ skill-name/
 ├── SKILL.md              # Core workflow and instructions (required)
 ├── README.md             # Human-readable overview
 ├── references/           # Detailed rules, schemas, rubrics
+│   └── reference.md
+├── docs/                 # Additional documentation
+│   └── product-guide-zh.md
 ├── scripts/              # Deterministic helper scripts
 ├── assets/               # Templates, static files
 └── evals/                # Validation scenarios
+    └── evals.json
 ```
 
 Only `SKILL.md` is required. Add the other directories when the skill grows enough to need them.
