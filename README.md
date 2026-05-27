@@ -10,6 +10,7 @@ A skill is a self-contained folder with a `SKILL.md` that defines a workflow for
 
 | Skill | Description | Version | Prerequisites |
 |---|---|---|---|
+| [okta-skill](./okta-skill/) | Okta SSO auto-login via Push MFA — authenticate and inject session cookies to access internal tools requiring SSO | 1.0.0 | `node` (18+), `agent-browser` |
 | [plancollab](./plancollab/) | Cross-agent planning and review between Claude Code and Codex — one agent creates implementation plans, the other reviews them, iterating until consensus is reached | 1.0.0 | `codex` CLI, `claude` CLI |
 | [skill-insp](./skill-insp/) | Evaluate, inspect, and improve skill folders — producing a scored report with safety analysis and actionable recommendations | 1.0.0 | - |
 

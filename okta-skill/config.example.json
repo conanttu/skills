@@ -1,0 +1,13 @@
+{
+  "username": "your.name@company.com",
+  "password": "your_password",
+  "okta_domain": "yourcompany.okta.com",
+  "push_factor_id": "",
+  "projects": {
+    "my-app": {
+      "dev": "https://my-app.dev.example.com/login",
+      "qa": "https://my-app.qa.example.com/login",
+      "prod": "https://my-app.example.com/login"
+    }
+  }
+}

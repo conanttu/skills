@@ -1,0 +1,49 @@
+{
+  "skill_name": "okta-skill",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Log in to my-app QA environment",
+      "expected_output": "Authenticated via Okta and navigated to QA URL with active session",
+      "files": [],
+      "expectations": [
+        "Invoked cli.js with --project my-app --env qa",
+        "Script read config.json from skill directory (not ~/.okta-skill.json)",
+        "Authenticated via Okta API (/api/v1/authn)",
+        "Completed MFA verification (Push)",
+        "Created Okta session and cached sessionId",
+        "Injected session cookie via agent-browser",
+        "Navigated to the QA URL from config"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Help me login to https://my-app.qa.example.com/",
+      "expected_output": "Auto-detected Okta domain, collected credentials, wrote config.json, auto-discovered push factor, completed login via Push MFA",
+      "files": [],
+      "expectations": [
+        "Opened user-provided URL with agent-browser",
+        "Auto-detected okta_domain from redirect URL (did NOT ask user for it)",
+        "Asked user for username and password ONLY (no other questions)",
+        "Auto-inferred project name and environment from URL (did NOT ask user)",
+        "Wrote config.json to skill directory with correct structure",
+        "Set file permissions to 600",
+        "Auto-discovered push_factor_id from --list-factors output (did NOT ask user to choose)",
+        "Saved push_factor_id to config.json",
+        "Completed login via Push MFA (user only tapped phone)"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Login to https://custom-app.example.com/login with Okta",
+      "expected_output": "Authenticated and navigated to the direct URL",
+      "files": [],
+      "expectations": [
+        "Invoked cli.js with --url https://custom-app.example.com/login",
+        "Read credentials from config.json",
+        "Completed Okta authentication and MFA",
+        "Injected cookie and navigated to the specified URL"
+      ]
+    }
+  ]
+}
