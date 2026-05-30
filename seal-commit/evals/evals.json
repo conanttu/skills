@@ -1,0 +1,74 @@
+{
+  "skill_name": "seal-commit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "commit",
+      "expected_output": "Lists all changed files (including expanded untracked directories) with numbers, asks user to select files, analyzes diff, generates change-review docs, auto-generates commit message, then executes git add + commit with heredoc format including the docs. Ends with ✨✨ seal-commit footer.",
+      "expectations": [
+        "Creates a stash snapshot before any other operation",
+        "Runs git stash apply immediately after stash save",
+        "Displays numbered file list from git status --porcelain including untracked entries",
+        "Asks user which files to commit before running git diff",
+        "Runs git diff only AFTER user selects files, targeting only selected tracked files",
+        "Uses Read tool to inspect content of untracked/new files among selection",
+        "Generates .change-review/<branch>-<date>/ folder with human.html and ai.md BEFORE committing",
+        "Auto-generates the best commit message without asking user to choose",
+        "Commits using heredoc format with subject + body (3-5 detail bullets)",
+        "The commit includes both code changes and change-review docs together",
+        "Does not run any git commands outside the allowed list",
+        "Response ends with ✨✨ seal-commit as the last line"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/seal doc",
+      "expected_output": "Skips commit steps, analyzes current diff (or HEAD~1 if diff empty), generates a folder in .change-review/ containing human.html (styled HTML) and ai.md (structured markdown for LLM consumption).",
+      "expectations": [
+        "Does NOT create a stash or attempt to commit",
+        "Runs git diff first; if empty falls back to git diff HEAD~1",
+        "Reads the change-review-template.html from resources/",
+        "Creates a folder in .change-review/ named with branch and date",
+        "Generates human.html inside the folder with filled HTML template",
+        "Generates ai.md inside the folder with structured markdown",
+        "Reports the generated folder path to the user",
+        "Response ends with ✨✨ seal-commit as the last line"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "只提交 src/api.ts 和 package.json，其他文件不要",
+      "expected_output": "Follows full commit flow but pre-selects only the two specified files without asking for file selection. Analyzes only those files, generates change-review docs, auto-generates commit message, and commits only those files plus the docs.",
+      "expectations": [
+        "Creates a stash snapshot before any other operation",
+        "Only adds src/api.ts and package.json (not other changed files)",
+        "Uses git add with specific file paths (not git add .)",
+        "Runs git diff -- src/api.ts package.json to analyze only selected files",
+        "Generates change-review docs before committing",
+        "Auto-generates the best commit message without asking user to choose",
+        "Commits using heredoc format with subject + detail body",
+        "The commit includes both the selected files and .change-review/ docs",
+        "Does not run any git commands outside the allowed list",
+        "Response ends with ✨✨ seal-commit as the last line"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I have some new files in a new directory plus some modified files, commit everything",
+      "expected_output": "Lists all files including expanding untracked directories into individual files. Since user said 'everything', selects all. Uses git diff for modified files and Read tool for new/untracked files. Generates change-review docs, auto-generates commit message, and commits all together.",
+      "expectations": [
+        "Creates a stash snapshot before any other operation",
+        "Runs git status --porcelain and expands untracked directories using Glob tool",
+        "Lists individual files within untracked directories (not just directory names)",
+        "Since user said 'everything', sets FILES_TO_ADD to all without asking",
+        "Uses git diff for tracked/modified files",
+        "Uses Read tool to inspect content of untracked/new files",
+        "Generates .change-review/ docs before committing",
+        "Auto-generates the best commit message with subject + detail list",
+        "Uses git add . since all files selected",
+        "The commit includes change-review docs together with code changes",
+        "Response ends with ✨✨ seal-commit as the last line"
+      ]
+    }
+  ]
+}

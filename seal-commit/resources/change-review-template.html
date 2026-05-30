@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TITLE}}</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #1e293b; line-height: 1.7; padding: 48px 48px 48px 268px; }
+  .container { max-width: 100%; margin: 0 auto; }
+
+  /* Hero header */
+  .hero { background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 50%, #ecfdf5 100%); border: 1px solid #e0f2fe; border-radius: 16px; padding: 32px 36px; margin-bottom: 36px; }
+  .hero h1 { font-size: 22px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+  .hero .subtitle { color: #64748b; margin-bottom: 0; font-size: 13px; display: flex; gap: 8px; align-items: center; }
+  .hero .subtitle a { color: #475569; text-decoration: none; background: #fff; padding: 4px 12px; border-radius: 20px; font-size: 12px; transition: all 0.15s; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+  .hero .subtitle a:hover { color: #1e40af; background: #eef2ff; border-color: #c7d2fe; }
+
+  /* Section headers */
+  h2 { font-size: 17px; font-weight: 700; margin: 48px 0 16px; padding: 0; border-bottom: none; color: #0f172a; }
+  h3 { font-size: 13px; font-weight: 600; margin: 20px 0 8px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* Sidebar Navigation */
+  .toc { position: fixed; top: 0; left: 0; width: 220px; height: 100vh; background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%); border-right: 1px solid #e5e7eb; padding: 28px 12px 24px; overflow-y: auto; z-index: 100; }
+  .toc::-webkit-scrollbar { width: 3px; }
+  .toc::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+  .toc-title { font-weight: 700; font-size: 11px; text-transform: uppercase; color: #6b7280; margin-bottom: 20px; letter-spacing: 1px; padding-left: 12px; display: flex; align-items: center; gap: 6px; }
+  .toc-title::before { content: ''; display: inline-block; width: 3px; height: 12px; background: #0d6efd; border-radius: 2px; }
+  .toc-group-title { font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.8px; margin: 18px 0 6px; padding: 0 12px; }
+  .toc-group-title:first-child { margin-top: 0; }
+  .toc-list { list-style: none; margin: 0 0 4px; padding: 0; }
+  .toc-list li { margin: 1px 0; }
+  .toc-list a { font-size: 12px; color: #4b5563; text-decoration: none; display: block; padding: 7px 12px; border-radius: 6px; transition: all 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; }
+  .toc-list a:hover { background: #eef2ff; color: #4338ca; }
+  .toc-list a.active { background: #eef2ff; color: #4338ca; font-weight: 600; }
+  .toc-list a.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 16px; background: #4338ca; border-radius: 0 2px 2px 0; }
+
+  /* TL;DR */
+  .tldr { background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); border: 1px solid #c7d2fe; border-radius: 12px; padding: 24px 28px; margin-bottom: 32px; }
+  .tldr-title { font-weight: 700; font-size: 13px; color: #4338ca; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .tldr ul { margin-left: 18px; font-size: 13px; color: #334155; }
+  .tldr li { margin: 6px 0; }
+  .tldr li strong { color: #1e293b; }
+
+  /* Cards */
+  .card { background: #fff; border-radius: 12px; padding: 28px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); border: none; }
+  .card-accent-blue { border-left: 4px solid #3b82f6; }
+  .card-accent-amber { border-left: 4px solid #f59e0b; }
+  .card-accent-emerald { border-left: 4px solid #10b981; }
+  .card-accent-violet { border-left: 4px solid #8b5cf6; }
+
+  /* Flat section */
+  .section-flat { background: #fff; border-radius: 12px; padding: 28px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+
+  /* Badges */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+  .badge-new { background: #dcfce7; color: #166534; }
+  .badge-modified { background: #fef9c3; color: #854d0e; }
+  .badge-removed { background: #fee2e2; color: #991b1b; }
+  .badge-breaking { background: #fce7f3; color: #9d174d; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: separate; border-spacing: 0; margin: 16px 0; font-size: 13px; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; background: #fff; }
+  th, td { padding: 12px 20px; text-align: left; border-bottom: 1px solid #f1f5f9; }
+  th { background: #f8fafc; font-weight: 600; font-size: 11px; text-transform: uppercase; color: #64748b; letter-spacing: 0.3px; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #f8fafc; }
+
+  /* Checklist */
+  .checklist td:first-child { width: 32px; text-align: center; padding: 0; }
+  .checklist td:first-child .check { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border: 2px solid #d1d5db; border-radius: 50%; cursor: pointer; transition: all 0.2s; user-select: none; font-size: 11px; color: transparent; }
+  .checklist td:first-child .check:hover { border-color: #10b981; background: #ecfdf5; }
+  .checklist td:first-child .check.checked { border-color: #10b981; background: #10b981; color: #fff; }
+  .checklist tr:has(.checked) td:nth-child(2),
+  .checklist tr:has(.checked) td:nth-child(3) { text-decoration: line-through; color: #94a3b8; }
+
+  /* Before/After comparison */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+  .compare-box { padding: 16px; border-radius: 10px; font-size: 12px; }
+  .compare-before { background: #fef2f2; border: 1px solid #fecaca; }
+  .compare-after { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .compare-label { font-weight: 600; font-size: 10px; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px; display: inline-block; padding: 2px 10px; border-radius: 20px; }
+  .compare-before .compare-label { color: #dc2626; background: #fee2e2; }
+  .compare-after .compare-label { color: #16a34a; background: #dcfce7; }
+
+  /* Code */
+  code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace; color: #475569; }
+  pre { background: #0f172a; color: #e2e8f0; padding: 18px; border-radius: 10px; overflow-x: auto; font-size: 12px; line-height: 1.6; margin: 8px 0; border: 1px solid #1e293b; }
+  pre code { background: none; padding: 0; color: inherit; }
+
+  /* Callouts */
+  .reason { background: #fffbeb; border: none; border-radius: 8px; padding: 12px 16px; margin: 0 0 16px; font-size: 13px; color: #78350f; }
+  .note { background: #eff6ff; border: none; border-radius: 8px; padding: 12px 16px; margin: 14px 0; font-size: 13px; color: #1e40af; }
+  .warn { background: #fef2f2; border: none; border-radius: 8px; padding: 12px 16px; margin: 14px 0; font-size: 13px; color: #991b1b; }
+
+  /* Flow */
+  .flow-init { margin: 12px 0 20px; }
+  .flow-init-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 8px; }
+  .flow-init-label { font-weight: 600; font-size: 13px; color: #1e293b; white-space: nowrap; min-width: 160px; font-family: 'SF Mono', 'Fira Code', monospace; }
+  .flow-init-arrow { color: #94a3b8; font-size: 16px; flex-shrink: 0; }
+  .flow-init-detail { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .flow-init-meta { font-size: 12px; color: #64748b; }
+  .flow-init-note { font-size: 12px; color: #94a3b8; margin-top: 6px; padding-left: 4px; font-style: italic; }
+
+  /* Param grid */
+  .param-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .param-group { padding: 12px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .param-group-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px; margin-right: 4px; white-space: nowrap; }
+  .param-group code { font-size: 11px; background: #e0e7ff; color: #3730a3; padding: 2px 7px; border-radius: 4px; }
+
+  /* File list */
+  .file-list { list-style: none; }
+  .file-list li { padding: 10px 14px; margin: 4px 0; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; display: flex; align-items: center; gap: 10px; }
+  .file-desc { font-family: -apple-system, sans-serif; color: #94a3b8; margin-left: auto; font-size: 11px; }
+
+  @media (max-width: 900px) {
+    .toc { position: static; width: 100%; height: auto; border-right: none; border-bottom: 1px solid #e9ecef; margin-bottom: 24px; padding: 16px; background: #fff; }
+    body { padding: 20px 12px; }
+    .compare { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- HERO: Replace {{TITLE}} with actual title -->
+<div class="hero">
+  <h1>{{TITLE}}</h1>
+  <p class="subtitle">
+    <!-- SECTION:LINKS — Example:
+    <a href="https://jira.example.com/browse/XXX-123">Jira</a>
+    <a href="https://confluence.example.com/display/XX/Doc">接口文档</a>
+    -->
+  </p>
+</div>
+
+<!-- SIDEBAR: Generate TOC entries matching the sections you include -->
+<nav class="toc">
+  <div class="toc-title">目录</div>
+  <!-- SECTION:TOC — Example:
+  <div class="toc-group-title">概览</div>
+  <ul class="toc-list">
+    <li><a href="#tldr" title="概要">概要</a></li>
+    <li><a href="#files" title="改动文件清单">改动文件清单</a></li>
+  </ul>
+  <div class="toc-group-title">核心改动</div>
+  <ul class="toc-list">
+    <li><a href="#module-1" title="模块名">模块名</a></li>
+  </ul>
+  <div class="toc-group-title">技术细节</div>
+  <ul class="toc-list">
+    <li><a href="#flow" title="整体数据流">整体数据流</a></li>
+    <li><a href="#api" title="接口 & 类型变更">接口 & 类型变更</a></li>
+    <li><a href="#removed" title="删除的代码">删除的代码</a></li>
+  </ul>
+  <div class="toc-group-title">验收</div>
+  <ul class="toc-list">
+    <li><a href="#notes" title="注意事项">注意事项</a></li>
+    <li><a href="#test" title="测试清单">测试清单</a></li>
+  </ul>
+  -->
+</nav>
+
+<!-- TL;DR -->
+<div class="tldr" id="tldr">
+  <div class="tldr-title">概要</div>
+  <!-- SECTION:TLDR — Example:
+  <ul>
+    <li><strong>问题：</strong>描述原来的问题</li>
+    <li><strong>方案：</strong>描述解决方案</li>
+    <li><strong>改动范围：</strong>N 个文件，影响说明</li>
+  </ul>
+  -->
+</div>
+
+<!-- FILES -->
+<h2 id="files">改动文件清单</h2>
+<div class="section-flat">
+  <ul class="file-list">
+    <!-- SECTION:FILES — Example:
+    <li><span class="badge badge-modified">Modified</span> src/pages/xxx.tsx <span class="file-desc">改动说明</span></li>
+    <li><span class="badge badge-new">New</span> src/types/xxx.ts <span class="file-desc">新增说明</span></li>
+    <li><span class="badge badge-removed">Deleted</span> src/old.ts <span class="file-desc">删除原因</span></li>
+    -->
+  </ul>
+</div>
+
+<!-- MODULES: Repeat per logical module. Cycle accent colors: blue, amber, emerald, violet -->
+<!-- SECTION:MODULES — Example for one module:
+<h2 id="module-1">模块标题</h2>
+<div class="card card-accent-blue">
+  <div class="reason">
+    <strong>Why：</strong>解释为什么做这个改动。
+  </div>
+  <div class="compare">
+    <div class="compare-box compare-before">
+      <div class="compare-label">Before</div>
+      <pre><code>// 改动前的关键代码</code></pre>
+    </div>
+    <div class="compare-box compare-after">
+      <div class="compare-label">After</div>
+      <pre><code>// 改动后的关键代码</code></pre>
+    </div>
+  </div>
+  <table>
+    <tr><th>项目</th><th>说明</th></tr>
+    <tr><td>关键点 1</td><td>详细描述</td></tr>
+  </table>
+</div>
+-->
+
+<!-- FLOW (optional, for architectural changes) -->
+<!-- SECTION:FLOW — Example:
+<h2 id="flow">整体数据流</h2>
+<div class="card">
+  <h3>页面加载</h3>
+  <div class="flow-init">
+    <div class="flow-init-item">
+      <div class="flow-init-label">functionName()</div>
+      <div class="flow-init-arrow">&rarr;</div>
+      <div class="flow-init-detail">
+        <code>POST /api/path</code>
+        <span class="flow-init-meta">返回说明</span>
+      </div>
+    </div>
+    <div class="flow-init-note">补充说明</div>
+  </div>
+  <h3>用户操作</h3>
+  <table>
+    <tr><th>操作</th><th>参数</th><th>行为</th></tr>
+    <tr><td>操作名</td><td><code>param=value</code></td><td>行为描述</td></tr>
+  </table>
+  <h3>参数结构</h3>
+  <div class="param-grid">
+    <div class="param-group">
+      <div class="param-group-label">分类</div>
+      <code>field1</code> <code>field2</code>
+    </div>
+  </div>
+</div>
+-->
+
+<!-- API CHANGES (optional, for type/endpoint changes) -->
+<!-- SECTION:API — Example:
+<h2 id="api">接口 & 类型变更</h2>
+<div class="section-flat">
+  <h3>Request 字段变更</h3>
+  <table>
+    <tr><th>字段</th><th>类型</th><th>变更</th><th>说明</th></tr>
+    <tr><td><code>fieldName</code></td><td>string?</td><td><span class="badge badge-new">new</span></td><td>字段用途</td></tr>
+  </table>
+  <div class="note"><strong>向后兼容：</strong>说明兼容性。</div>
+</div>
+-->
+
+<!-- REMOVED CODE (optional) -->
+<!-- SECTION:REMOVED — Example:
+<h2 id="removed">删除的代码</h2>
+<div class="section-flat">
+  <table>
+    <tr><th>删除内容</th><th>原因</th></tr>
+    <tr><td><code>functionName()</code></td><td>不再需要的原因</td></tr>
+  </table>
+</div>
+-->
+
+<!-- NOTES -->
+<!-- SECTION:NOTES — Example:
+<h2 id="notes">注意事项</h2>
+<div class="section-flat">
+  <table>
+    <tr><th>#</th><th>事项</th><th>说明</th></tr>
+    <tr><td>1</td><td><span class="badge badge-breaking">行为变化</span> 简要描述</td><td>详细说明</td></tr>
+    <tr><td>2</td><td>事项名</td><td>详细说明</td></tr>
+  </table>
+</div>
+-->
+
+<!-- TESTING CHECKLIST -->
+<!-- SECTION:CHECKLIST — Example:
+<h2 id="test">测试清单</h2>
+<div class="section-flat">
+  <h3>分组名</h3>
+  <table class="checklist">
+    <tr><th></th><th>场景</th><th>预期结果</th></tr>
+    <tr><td><span class="check" onclick="this.classList.toggle('checked')">&#10003;</span></td><td>测试场景</td><td>预期行为</td></tr>
+  </table>
+</div>
+-->
+
+</div>
+
+<script>
+const tocLinks = document.querySelectorAll('.toc-list a');
+const sections = Array.from(tocLinks).map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+window.addEventListener('scroll', () => {
+  let current = '';
+  for (const section of sections) {
+    if (section.getBoundingClientRect().top <= 80) current = section.id;
+  }
+  tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+});
+</script>
+</body>
+</html>

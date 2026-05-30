@@ -12,6 +12,7 @@ A skill is a self-contained folder with a `SKILL.md` that defines a workflow for
 |---|---|---|---|
 | [okta-skill](./okta-skill/) | Okta SSO auto-login via Push MFA — authenticate and inject session cookies to access internal tools requiring SSO | 1.0.0 | `node` (18+), `agent-browser` |
 | [plancollab](./plancollab/) | Cross-agent planning and review between Claude Code and Codex — one agent creates implementation plans, the other reviews them, iterating until consensus is reached | 1.0.0 | `codex` CLI, `claude` CLI |
+| [seal-commit](./seal-commit/) | Safety-first git commit with stash snapshot, numbered file selection, auto-generated conventional commit message, and dual-format change review docs (human.html + ai.md) included in the same commit | 1.0.0 | - |
 | [skill-insp](./skill-insp/) | Evaluate, inspect, and improve skill folders — producing a scored report with safety analysis and actionable recommendations | 1.0.0 | - |
 
 > Version in this table should match the `metadata.version` field in each skill's `SKILL.md`. Update both when releasing.
